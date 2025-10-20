@@ -5,10 +5,14 @@ window.addEventListener('DOMContentLoaded', function () {
     var maskImages = document.querySelectorAll('.mask-animation');
 
     maskImages.forEach(function (maskImage) {
-        // マスクアニメーションの初期化（少し遅らせて確実に実行）
-        setTimeout(function () {
+        // 画像が完全に読み込まれてから初期化
+        if (maskImage.complete) {
             initMaskAnimation(maskImage);
-        }, 100);
+        } else {
+            maskImage.addEventListener('load', function () {
+                initMaskAnimation(maskImage);
+            });
+        }
     });
 });
 
@@ -30,12 +34,36 @@ function initMaskAnimation(maskImage) {
 
     console.log('マスクアイテムを生成中...', totalItems + '個');
 
-    // 画像の位置を取得
-    var imageRect = maskImage.getBoundingClientRect();
-    var containerRect = maskImage.parentNode.getBoundingClientRect();
-    var imageOffsetX = imageRect.left - containerRect.left;
-    var imageOffsetY = imageRect.top - containerRect.top;
+    // 画像の位置とサイズを取得（少し遅らせて確実に取得）
+    setTimeout(function () {
+        var imageRect = maskImage.getBoundingClientRect();
+        var containerRect = maskImage.parentNode.getBoundingClientRect();
+        var imageOffsetX = imageRect.left - containerRect.left;
+        var imageOffsetY = imageRect.top - containerRect.top;
 
+        // 画像の実際の表示サイズを取得
+        var imageWidth = imageRect.width;
+        var imageHeight = imageRect.height;
+
+        console.log('画像サイズ:', imageWidth, 'x', imageHeight);
+        console.log('画像位置:', imageOffsetX, imageOffsetY);
+
+        // グリッドの1セルのサイズを計算（画像サイズをグリッド数で割る）
+        var cellWidth = imageWidth / gridCols;
+        var cellHeight = imageHeight / gridRows;
+
+        console.log('セルサイズ:', cellWidth, 'x', cellHeight);
+
+        // マスクアイテムを動的に生成
+        createMaskItems(maskImage, imageOffsetX, imageOffsetY, cellWidth, cellHeight, gridCols, gridRows, totalItems);
+
+        // マスクアイテム生成後にアニメーションを設定
+        startMaskAnimation(maskImage, gridCols, gridRows, totalItems, delayMin, delayMax);
+    }, 50);
+}
+
+// マスクアイテム生成関数
+function createMaskItems(maskImage, imageOffsetX, imageOffsetY, cellWidth, cellHeight, gridCols, gridRows, totalItems) {
     // マスクアイテムを動的に生成
     for (var i = 0; i < totalItems; i++) {
         var maskItem = document.createElement('div');
@@ -45,10 +73,13 @@ function initMaskAnimation(maskImage) {
         var row = Math.floor(i / gridCols);
         var col = i % gridCols;
 
-        // 位置を計算（150px x 133pxのグリッド）
-        var posX = imageOffsetX + (col * 150);
-        var posY = imageOffsetY + (row * 133);
+        // 位置を計算（画像のサイズに正確に合わせる）
+        var posX = imageOffsetX + (col * cellWidth);
+        var posY = imageOffsetY + (row * cellHeight);
 
+        // サイズを設定
+        maskItem.style.width = cellWidth + 'px';
+        maskItem.style.height = cellHeight + 'px';
         maskItem.style.left = posX + 'px';
         maskItem.style.top = posY + 'px';
 
@@ -57,7 +88,10 @@ function initMaskAnimation(maskImage) {
     }
 
     console.log('マスクアイテム生成完了');
+}
 
+// マスクアニメーション開始関数
+function startMaskAnimation(maskImage, gridCols, gridRows, totalItems, delayMin, delayMax) {
     // 既存のグリッドアニメーションと同じ累積時間計算関数を使用
     function calculateCumulativeTime(order, maxOrder) {
         var time = 0;
