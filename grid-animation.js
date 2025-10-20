@@ -1,16 +1,16 @@
 // グリッドアニメーション用のJavaScript
 // ページ読み込み時に順番にフェードイン
 window.addEventListener('DOMContentLoaded', function () {
-    // グリッドアニメーションクラスを持つ要素をすべて取得
-    var gridContainers = document.querySelectorAll('.grid-animation');
+    // グリッドアニメーションクラスを持つ画像要素をすべて取得
+    var gridImages = document.querySelectorAll('.grid-animation');
 
-    gridContainers.forEach(function (gridContainer) {
-        initGridAnimation(gridContainer);
+    gridImages.forEach(function (gridImage) {
+        initGridAnimation(gridImage);
     });
 });
 
 // グリッドアニメーションの初期化関数
-function initGridAnimation(gridContainer) {
+function initGridAnimation(gridImage) {
     var gridCols = 8; // 横8列
     var gridRows = 6; // 縦6行
     var totalItems = gridCols * gridRows;
@@ -18,8 +18,10 @@ function initGridAnimation(gridContainer) {
     var delayMax = 20; // 最後のグリッドの表示間隔（ミリ秒）
 
     // 画像のURLを取得
-    var img = gridContainer.querySelector('.grid-image') || gridContainer.querySelector('img');
-    var imageUrl = img ? img.src : 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop';
+    var imageUrl = gridImage.src;
+
+    // 画像を非表示にする
+    gridImage.style.display = 'none';
 
     // グリッドアイテムを動的に生成
     for (var i = 0; i < totalItems; i++) {
@@ -30,14 +32,22 @@ function initGridAnimation(gridContainer) {
         var row = Math.floor(i / gridCols);
         var col = i % gridCols;
 
+        // 位置を計算（150px x 133pxのグリッド）
+        var posX = col * 150;
+        var posY = row * 133;
+
         // background-positionを計算（0%から100%の間で均等に配置）
-        var posX = (col / (gridCols - 1)) * 100;
-        var posY = (row / (gridRows - 1)) * 100;
+        var bgPosX = (col / (gridCols - 1)) * 100;
+        var bgPosY = (row / (gridRows - 1)) * 100;
 
         gridItem.style.backgroundImage = 'url(' + imageUrl + ')';
         gridItem.style.backgroundSize = '800% 600%';
-        gridItem.style.backgroundPosition = posX + '% ' + posY + '%';
-        gridContainer.appendChild(gridItem);
+        gridItem.style.backgroundPosition = bgPosX + '% ' + bgPosY + '%';
+        gridItem.style.left = posX + 'px';
+        gridItem.style.top = posY + 'px';
+
+        // 画像の親要素に追加
+        gridImage.parentNode.insertBefore(gridItem, gridImage);
     }
 
     // 点滅パターン: [表示時間, 非表示時間]のペア
@@ -88,7 +98,7 @@ function initGridAnimation(gridContainer) {
     }
 
     // 点滅アニメーション（Z順と逆N字順の組み合わせ）
-    var gridItems = document.querySelectorAll('.grid-item');
+    var gridItems = gridImage.parentNode.querySelectorAll('.grid-item');
     var maxOrder = totalItems - 1;
 
     gridItems.forEach(function (item, index) {

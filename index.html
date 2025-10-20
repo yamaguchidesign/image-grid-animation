@@ -11,21 +11,14 @@
 <body>
     <div class="container">
         <h2>画像をグリッドで分割してアニメーション</h2>
-        <div class="grid-container grid-animation">
-            <img class="grid-image" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop"
-                alt="Sample Image">
-        </div>
+        <img class="grid-image grid-animation"
+            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop" alt="Sample Image">
 
         <h2>画像に白を乗せて白がグリッドで消えていくアニメーション</h2>
-        <div class="mask-container mask-animation">
-            <div class="image-layer">
-                <img class="mask-image" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop"
-                    alt="Sample Image">
-            </div>
-            <div class="mask-layer">
-                <!-- マスクアイテムはJavaScriptで動的に生成 -->
-            </div>
-        </div>
+        <img class="mask-image mask-animation"
+            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop" alt="Sample Image">
+
+
     </div>
     <script src="grid-animation.js"></script>
     <script src="mask-animation.js"></script>

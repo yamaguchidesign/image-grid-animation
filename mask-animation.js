@@ -1,34 +1,27 @@
 // マスクアニメーション用のJavaScript
 // ページ読み込み時にマスクアニメーションを初期化
 window.addEventListener('DOMContentLoaded', function () {
-    // マスクアニメーションクラスを持つ要素をすべて取得
-    var maskContainers = document.querySelectorAll('.mask-animation');
+    // マスクアニメーションクラスを持つ画像要素をすべて取得
+    var maskImages = document.querySelectorAll('.mask-animation');
 
-    maskContainers.forEach(function (maskContainer) {
+    maskImages.forEach(function (maskImage) {
         // マスクアニメーションの初期化（少し遅らせて確実に実行）
         setTimeout(function () {
-            initMaskAnimation(maskContainer);
+            initMaskAnimation(maskImage);
         }, 100);
     });
 });
 
 // マスクアニメーションの初期化関数
-function initMaskAnimation(maskContainer) {
+function initMaskAnimation(maskImage) {
     console.log('マスクアニメーション開始');
-    var maskLayer = maskContainer.querySelector('.mask-layer');
-
-    if (!maskLayer) {
-        console.error('maskLayer要素が見つかりません');
-        return;
-    }
 
     var gridCols = 8; // 横8列
     var gridRows = 6; // 縦6行
     var totalItems = gridCols * gridRows;
-    
+
     // 画像のURLを取得（デバッグ用）
-    var img = maskContainer.querySelector('.mask-image') || maskContainer.querySelector('img');
-    var imageUrl = img ? img.src : 'デフォルト画像';
+    var imageUrl = maskImage.src;
     console.log('使用する画像:', imageUrl);
 
     // 既存のグリッドアニメーションと同じパラメータを使用
@@ -37,11 +30,30 @@ function initMaskAnimation(maskContainer) {
 
     console.log('マスクアイテムを生成中...', totalItems + '個');
 
+    // 画像の位置を取得
+    var imageRect = maskImage.getBoundingClientRect();
+    var containerRect = maskImage.parentNode.getBoundingClientRect();
+    var imageOffsetX = imageRect.left - containerRect.left;
+    var imageOffsetY = imageRect.top - containerRect.top;
+
     // マスクアイテムを動的に生成
     for (var i = 0; i < totalItems; i++) {
         var maskItem = document.createElement('div');
         maskItem.className = 'mask-item';
-        maskLayer.appendChild(maskItem);
+
+        // 行と列を計算
+        var row = Math.floor(i / gridCols);
+        var col = i % gridCols;
+
+        // 位置を計算（150px x 133pxのグリッド）
+        var posX = imageOffsetX + (col * 150);
+        var posY = imageOffsetY + (row * 133);
+
+        maskItem.style.left = posX + 'px';
+        maskItem.style.top = posY + 'px';
+
+        // 画像の後に追加（画像の上に重なるように）
+        maskImage.parentNode.insertBefore(maskItem, maskImage.nextSibling);
     }
 
     console.log('マスクアイテム生成完了');
@@ -58,7 +70,7 @@ function initMaskAnimation(maskContainer) {
     }
 
     // マスクアニメーション（既存のグリッドアニメーションと同じタイミング）
-    var maskItems = document.querySelectorAll('.mask-item');
+    var maskItems = maskImage.parentNode.querySelectorAll('.mask-item');
     var maxOrder = totalItems - 1;
 
     console.log('マスクアイテム数:', maskItems.length);
