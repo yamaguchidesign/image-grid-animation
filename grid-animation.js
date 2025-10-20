@@ -2,7 +2,7 @@
  * Grid Animation Library
  * imgタグに "grid-animation" クラスを追加するだけで使用可能
  */
-(function() {
+(function () {
     'use strict';
 
     // 設定
@@ -28,7 +28,7 @@
 
         // 画像の読み込みを待つ
         if (!img.complete) {
-            img.addEventListener('load', function() {
+            img.addEventListener('load', function () {
                 transformToGrid(img);
             });
         } else {
@@ -87,7 +87,7 @@
         var totalItems = config.gridCols * config.gridRows;
         var maxOrder = totalItems - 1;
 
-        gridItems.forEach(function(item, index) {
+        gridItems.forEach(function (item, index) {
             var row = Math.floor(index / config.gridCols);
             var col = index % config.gridCols;
 
@@ -117,19 +117,19 @@
     function applyBlinkPattern(item, startTime) {
         var currentTime = startTime;
 
-        config.blinkPattern.forEach(function(pattern) {
+        config.blinkPattern.forEach(function (pattern) {
             var showDuration = pattern[0];
             var hideDuration = pattern[1];
 
             // 表示
-            setTimeout(function() {
+            setTimeout(function () {
                 item.style.opacity = '1';
             }, currentTime);
 
             currentTime += showDuration;
 
             // 非表示
-            setTimeout(function() {
+            setTimeout(function () {
                 item.style.opacity = '0';
             }, currentTime);
 
@@ -137,7 +137,7 @@
         });
 
         // 最終表示
-        setTimeout(function() {
+        setTimeout(function () {
             item.style.opacity = '1';
         }, currentTime);
     }
@@ -145,15 +145,15 @@
     // ページ読み込み時に実行
     function init() {
         var images = document.querySelectorAll('img.grid-animation');
-        images.forEach(function(img) {
+        images.forEach(function (img) {
             initGridAnimation(img);
         });
 
         // 動的に追加された画像にも対応（MutationObserver）
         if (typeof MutationObserver !== 'undefined') {
-            var observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    mutation.addedNodes.forEach(function(node) {
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    mutation.addedNodes.forEach(function (node) {
                         if (node.nodeType === 1) { // Element node
                             if (node.tagName === 'IMG' && node.classList.contains('grid-animation')) {
                                 initGridAnimation(node);
@@ -161,7 +161,7 @@
                             // 子要素もチェック
                             var childImages = node.querySelectorAll && node.querySelectorAll('img.grid-animation');
                             if (childImages) {
-                                childImages.forEach(function(img) {
+                                childImages.forEach(function (img) {
                                     initGridAnimation(img);
                                 });
                             }
