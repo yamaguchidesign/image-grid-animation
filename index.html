@@ -10,21 +10,25 @@
 
 <body>
     <div class="container">
-        <h1>画像表示実験</h1>
-        <div class="grid-container" id="gridContainer">
+        <h2>画像をグリッドで分割してアニメーション</h2>
+        <div class="grid-container grid-animation">
+            <img class="grid-image" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop"
+                alt="Sample Image">
         </div>
 
-        <h2>マスクアニメーション</h2>
-        <div class="mask-container" id="maskContainer">
+        <h2>画像に白を乗せて白がグリッドで消えていくアニメーション</h2>
+        <div class="mask-container mask-animation">
             <div class="image-layer">
-                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop"
+                <img class="mask-image" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop"
                     alt="Sample Image">
             </div>
-            <div class="mask-layer" id="maskLayer">
+            <div class="mask-layer">
+                <!-- マスクアイテムはJavaScriptで動的に生成 -->
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="grid-animation.js"></script>
+    <script src="mask-animation.js"></script>
 </body>
 
 </html>

@@ -89,6 +89,8 @@ h2 {
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(6, 1fr);
     gap: 0;
+    background-color: white;
+    /* 初期状態で白い背景を表示 */
 }
 
 .mask-item {

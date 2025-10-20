@@ -1,193 +1,111 @@
-/**
- * Grid Animation Library
- * imgタグに "grid-animation" クラスを追加するだけで使用可能
- */
-(function () {
-    'use strict';
+// グリッドアニメーション用のJavaScript
+// ページ読み込み時に順番にフェードイン
+window.addEventListener('DOMContentLoaded', function () {
+    // グリッドアニメーションクラスを持つ要素をすべて取得
+    var gridContainers = document.querySelectorAll('.grid-animation');
 
-    // 設定
-    var config = {
-        gridCols: 8,
-        gridRows: 6,
-        delayMin: 2,
-        delayMax: 20,
-        blinkPattern: [
-            [20, 30],
-            [20, 60],
-            [80, 100],
-            [40, 50]
-        ],
-        reverseNDelay: 200 // 逆N字順の遅延時間
-    };
+    gridContainers.forEach(function (gridContainer) {
+        initGridAnimation(gridContainer);
+    });
+});
 
-    // imgタグをグリッドアニメーションに変換
-    function initGridAnimation(img) {
-        // すでに処理済みの場合はスキップ
-        if (img.dataset.gridInitialized) return;
-        img.dataset.gridInitialized = 'true';
+// グリッドアニメーションの初期化関数
+function initGridAnimation(gridContainer) {
+    var gridCols = 8; // 横8列
+    var gridRows = 6; // 縦6行
+    var totalItems = gridCols * gridRows;
+    var delayMin = 2; // 最初のグリッドの表示間隔（ミリ秒）
+    var delayMax = 20; // 最後のグリッドの表示間隔（ミリ秒）
 
-        // 画像の読み込みを待つ
-        if (!img.complete) {
-            img.addEventListener('load', function () {
-                transformToGrid(img);
-            });
-        } else {
-            transformToGrid(img);
-        }
+    // 画像のURLを取得
+    var img = gridContainer.querySelector('.grid-image') || gridContainer.querySelector('img');
+    var imageUrl = img ? img.src : 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop';
+
+    // グリッドアイテムを動的に生成
+    for (var i = 0; i < totalItems; i++) {
+        var gridItem = document.createElement('div');
+        gridItem.className = 'grid-item';
+
+        // 行と列を計算
+        var row = Math.floor(i / gridCols);
+        var col = i % gridCols;
+
+        // background-positionを計算（0%から100%の間で均等に配置）
+        var posX = (col / (gridCols - 1)) * 100;
+        var posY = (row / (gridRows - 1)) * 100;
+
+        gridItem.style.backgroundImage = 'url(' + imageUrl + ')';
+        gridItem.style.backgroundSize = '800% 600%';
+        gridItem.style.backgroundPosition = posX + '% ' + posY + '%';
+        gridContainer.appendChild(gridItem);
     }
 
-    function transformToGrid(img) {
-        var imageUrl = img.src;
-        var width = img.offsetWidth || img.width;
-        var height = img.offsetHeight || img.height;
+    // 点滅パターン: [表示時間, 非表示時間]のペア
+    var blinkPattern = [
+        [40, 30],   // 0.02s表示 → 0.03s非表示
+        [40, 60],   // 0.02s表示 → 0.06s非表示
+        [80, 100]  // 0.08s表示 → 0.1s非表示
+    ];
 
-        // コンテナを作成
-        var container = document.createElement('div');
-        container.className = 'grid-animation-container';
-        container.style.width = width + 'px';
-        container.style.height = height + 'px';
-        container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(' + config.gridCols + ', 1fr)';
-        container.style.gridTemplateRows = 'repeat(' + config.gridRows + ', 1fr)';
-        container.style.gap = '0';
-
-        // 元のimgタグを置き換え
-        img.parentNode.replaceChild(container, img);
-
-        var totalItems = config.gridCols * config.gridRows;
-
-        // グリッドアイテムを生成
-        for (var i = 0; i < totalItems; i++) {
-            var gridItem = document.createElement('div');
-            gridItem.className = 'grid-animation-item';
-
-            var row = Math.floor(i / config.gridCols);
-            var col = i % config.gridCols;
-
-            var posX = (col / (config.gridCols - 1)) * 100;
-            var posY = (row / (config.gridRows - 1)) * 100;
-
-            gridItem.style.width = '100%';
-            gridItem.style.height = '100%';
-            gridItem.style.backgroundImage = 'url(' + imageUrl + ')';
-            gridItem.style.backgroundSize = (config.gridCols * 100) + '% ' + (config.gridRows * 100) + '%';
-            gridItem.style.backgroundPosition = posX + '% ' + posY + '%';
-            gridItem.style.opacity = '0';
-            gridItem.style.transition = 'opacity 0.3s ease-in-out';
-
-            container.appendChild(gridItem);
-        }
-
-        // アニメーション開始
-        startAnimation(container);
-    }
-
-    function startAnimation(container) {
-        var gridItems = container.querySelectorAll('.grid-animation-item');
-        var totalItems = config.gridCols * config.gridRows;
-        var maxOrder = totalItems - 1;
-
-        gridItems.forEach(function (item, index) {
-            var row = Math.floor(index / config.gridCols);
-            var col = index % config.gridCols;
-
-            // Z順
-            var zOrder = index;
-            var zStartTime = calculateCumulativeTime(zOrder, maxOrder);
-
-            // 逆N字順
-            var reverseNOrder = col * config.gridRows + row;
-            var reverseNStartTime = calculateCumulativeTime(reverseNOrder, maxOrder) + config.reverseNDelay;
-
-            // 2つのパターンを適用
-            applyBlinkPattern(item, zStartTime);
-            applyBlinkPattern(item, reverseNStartTime);
-        });
-    }
-
-    function calculateCumulativeTime(order, maxOrder) {
-        var time = 0;
-        for (var i = 0; i < order; i++) {
-            var currentDelay = config.delayMin + (config.delayMax - config.delayMin) * (i / maxOrder);
-            time += currentDelay;
-        }
-        return time;
-    }
-
+    // 点滅パターンを実行する関数
     function applyBlinkPattern(item, startTime) {
         var currentTime = startTime;
 
-        config.blinkPattern.forEach(function (pattern) {
+        blinkPattern.forEach(function (pattern) {
             var showDuration = pattern[0];
             var hideDuration = pattern[1];
 
             // 表示
             setTimeout(function () {
-                item.style.opacity = '1';
+                item.classList.add('fade-in');
             }, currentTime);
 
             currentTime += showDuration;
 
             // 非表示
             setTimeout(function () {
-                item.style.opacity = '0';
+                item.classList.remove('fade-in');
             }, currentTime);
 
             currentTime += hideDuration;
         });
 
-        // 最終表示
+        // 最終表示（そのまま表示し続ける）
         setTimeout(function () {
-            item.style.opacity = '1';
+            item.classList.add('fade-in');
         }, currentTime);
     }
 
-    // ページ読み込み時に実行
-    function init() {
-        var images = document.querySelectorAll('img.grid-animation');
-        images.forEach(function (img) {
-            initGridAnimation(img);
-        });
-
-        // 動的に追加された画像にも対応（MutationObserver）
-        if (typeof MutationObserver !== 'undefined') {
-            var observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    mutation.addedNodes.forEach(function (node) {
-                        if (node.nodeType === 1) { // Element node
-                            if (node.tagName === 'IMG' && node.classList.contains('grid-animation')) {
-                                initGridAnimation(node);
-                            }
-                            // 子要素もチェック
-                            var childImages = node.querySelectorAll && node.querySelectorAll('img.grid-animation');
-                            if (childImages) {
-                                childImages.forEach(function (img) {
-                                    initGridAnimation(img);
-                                });
-                            }
-                        }
-                    });
-                });
-            });
-
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
+    // 累積時間を計算する関数（徐々に遅くなる）
+    function calculateCumulativeTime(order, maxOrder) {
+        var time = 0;
+        for (var i = 0; i < order; i++) {
+            // 線形補間: delayMin から delayMax まで徐々に増加
+            var currentDelay = delayMin + (delayMax - delayMin) * (i / maxOrder);
+            time += currentDelay;
         }
+        return time;
     }
 
-    // DOMContentLoaded または 即座に実行
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    // 点滅アニメーション（Z順と逆N字順の組み合わせ）
+    var gridItems = document.querySelectorAll('.grid-item');
+    var maxOrder = totalItems - 1;
 
-    // グローバルに設定変更用の関数を公開
-    window.GridAnimation = {
-        config: config,
-        init: init
-    };
-})();
+    gridItems.forEach(function (item, index) {
+        // 行と列を計算
+        var row = Math.floor(index / gridCols);
+        var col = index % gridCols;
 
+        // Z順の表示順を計算（左上から右へ、次の行へ）
+        var zOrder = index;
+        var zStartTime = calculateCumulativeTime(zOrder, maxOrder);
+
+        // 逆N字順の表示順を計算（列ごとに上から下）
+        var reverseNOrder = col * gridRows + row;
+        var reverseNStartTime = calculateCumulativeTime(reverseNOrder, maxOrder) + 100; // 0.2秒遅らせる
+
+        // 2つのパターンを適用
+        applyBlinkPattern(item, zStartTime);
+        applyBlinkPattern(item, reverseNStartTime);
+    });
+});

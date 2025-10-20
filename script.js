@@ -93,18 +93,31 @@ window.addEventListener('DOMContentLoaded', function () {
         applyBlinkPattern(item, reverseNStartTime);
     });
 
-    // マスクアニメーションの初期化
-    initMaskAnimation();
+    // マスクアニメーションの初期化（少し遅らせて確実に実行）
+    setTimeout(function () {
+        initMaskAnimation();
+    }, 100);
 });
 
 // マスクアニメーションの初期化関数
 function initMaskAnimation() {
+    console.log('マスクアニメーション開始');
     var maskLayer = document.getElementById('maskLayer');
+
+    if (!maskLayer) {
+        console.error('maskLayer要素が見つかりません');
+        return;
+    }
+
     var gridCols = 8; // 横8列
     var gridRows = 6; // 縦6行
     var totalItems = gridCols * gridRows;
-    var delayMin = 50; // 最初のマスクの消去間隔（ミリ秒）
-    var delayMax = 200; // 最後のマスクの消去間隔（ミリ秒）
+
+    // 既存のグリッドアニメーションと同じパラメータを使用
+    var delayMin = 2; // 最初のグリッドの表示間隔（ミリ秒）
+    var delayMax = 20; // 最後のグリッドの表示間隔（ミリ秒）
+
+    console.log('マスクアイテムを生成中...', totalItems + '個');
 
     // マスクアイテムを動的に生成
     for (var i = 0; i < totalItems; i++) {
@@ -113,7 +126,9 @@ function initMaskAnimation() {
         maskLayer.appendChild(maskItem);
     }
 
-    // 累積時間を計算する関数（徐々に遅くなる）
+    console.log('マスクアイテム生成完了');
+
+    // 既存のグリッドアニメーションと同じ累積時間計算関数を使用
     function calculateCumulativeTime(order, maxOrder) {
         var time = 0;
         for (var i = 0; i < order; i++) {
@@ -124,9 +139,11 @@ function initMaskAnimation() {
         return time;
     }
 
-    // マスクアニメーション（左上から順番に消していく）
+    // マスクアニメーション（既存のグリッドアニメーションと同じタイミング）
     var maskItems = document.querySelectorAll('.mask-item');
     var maxOrder = totalItems - 1;
+
+    console.log('マスクアイテム数:', maskItems.length);
 
     maskItems.forEach(function (item, index) {
         // 行と列を計算
@@ -135,12 +152,17 @@ function initMaskAnimation() {
 
         // Z順の表示順を計算（左上から右へ、次の行へ）
         var zOrder = index;
-        var zStartTime = calculateCumulativeTime(zOrder, maxOrder) + 1000; // 1秒遅らせる
+        var zStartTime = calculateCumulativeTime(zOrder, maxOrder);
 
-        // マスクを消すアニメーション
+        console.log('マスクアイテム', index, ':', zStartTime + 'ms後に消去');
+
+        // マスクを消すアニメーション（既存のグリッドと同じタイミング）
         setTimeout(function () {
+            console.log('マスクアイテム', index, 'を消去');
             item.classList.add('fade-out');
         }, zStartTime);
     });
+
+    console.log('マスクアニメーション設定完了');
 }
 
