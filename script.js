@@ -92,5 +92,55 @@ window.addEventListener('DOMContentLoaded', function () {
         applyBlinkPattern(item, zStartTime);
         applyBlinkPattern(item, reverseNStartTime);
     });
+
+    // マスクアニメーションの初期化
+    initMaskAnimation();
 });
+
+// マスクアニメーションの初期化関数
+function initMaskAnimation() {
+    var maskLayer = document.getElementById('maskLayer');
+    var gridCols = 8; // 横8列
+    var gridRows = 6; // 縦6行
+    var totalItems = gridCols * gridRows;
+    var delayMin = 50; // 最初のマスクの消去間隔（ミリ秒）
+    var delayMax = 200; // 最後のマスクの消去間隔（ミリ秒）
+
+    // マスクアイテムを動的に生成
+    for (var i = 0; i < totalItems; i++) {
+        var maskItem = document.createElement('div');
+        maskItem.className = 'mask-item';
+        maskLayer.appendChild(maskItem);
+    }
+
+    // 累積時間を計算する関数（徐々に遅くなる）
+    function calculateCumulativeTime(order, maxOrder) {
+        var time = 0;
+        for (var i = 0; i < order; i++) {
+            // 線形補間: delayMin から delayMax まで徐々に増加
+            var currentDelay = delayMin + (delayMax - delayMin) * (i / maxOrder);
+            time += currentDelay;
+        }
+        return time;
+    }
+
+    // マスクアニメーション（左上から順番に消していく）
+    var maskItems = document.querySelectorAll('.mask-item');
+    var maxOrder = totalItems - 1;
+
+    maskItems.forEach(function (item, index) {
+        // 行と列を計算
+        var row = Math.floor(index / gridCols);
+        var col = index % gridCols;
+
+        // Z順の表示順を計算（左上から右へ、次の行へ）
+        var zOrder = index;
+        var zStartTime = calculateCumulativeTime(zOrder, maxOrder) + 1000; // 1秒遅らせる
+
+        // マスクを消すアニメーション
+        setTimeout(function () {
+            item.classList.add('fade-out');
+        }, zStartTime);
+    });
+}
 
